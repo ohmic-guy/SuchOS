@@ -1,6 +1,28 @@
 BITS 16
 ORG 0x7E00
 
+    ; Load Kernel from disk sector 3 to 0x10000
+    mov ax, 0x1000
+    mov es, ax
+    xor bx, bx
+
+    mov ah, 0x02
+    mov al, 15      ; Read 15 sectors for kernel
+    mov ch, 0
+    mov cl, 3       ; Start at sector 3
+    mov dh, 0
+    int 0x13
+    jc disk_error
+    jmp load_ok
+
+disk_error:
+    mov ah, 0x0E
+    mov al, 'E'
+    int 0x10
+    cli
+    hlt
+
+load_ok:
     cli
 
     in  al, 0x92
@@ -44,8 +66,7 @@ pm_entry:
     add edi, 2
     jmp .print
 .done:
-    cli
-    hlt
+    jmp 0x10000
 
 banner db '[ SuchOS v0.1 ] Protected mode active.', 0
 
