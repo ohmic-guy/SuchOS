@@ -1,0 +1,16 @@
+# Build artifacts
+*.o
+*.bin
+*.img
+*.iso
+*.map
+
+# Emulator logs
+bochsout.txt
+*.log
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*~
