@@ -1,33 +1,28 @@
 BITS 16
 ORG 0x7E00
 
-    ; Load Kernel from disk sector 3 to 0x10000
-    mov ax, 0x1000
-    mov es, ax
-    xor bx, bx
-
-    mov ah, 0x02
-    mov al, 15      ; Read 15 sectors for kernel
-    mov ch, 0
-    mov cl, 3       ; Start at sector 3
-    mov dh, 0
-    int 0x13
-    jc disk_error
-    jmp load_ok
-
-disk_error:
-    mov ah, 0x0E
-    mov al, 'E'
-    int 0x10
-    cli
-    hlt
-
-load_ok:
     cli
 
+    ; Enable A20
     in  al, 0x92
     or  al, 2
     out 0x92, al
+
+    ; Load kernel: 32 sectors from sector 3 → 0x10000
+    mov ax, 0x1000      ; segment 0x1000 × 16 = physical 0x10000
+    mov es, ax
+    xor bx, bx          ; offset 0 → ES:BX = 0x10000
+
+    mov ah, 0x02
+    mov al, 32          ; 32 sectors (16KB, more than enough)
+    mov ch, 0
+    mov cl, 3           ; BIOS sector 3 (1-indexed)
+    mov dh, 0
+    int 0x13
+    jc .disk_err
+
+    xor ax, ax
+    mov es, ax
 
     lgdt [gdt_desc]
 
@@ -36,6 +31,13 @@ load_ok:
     mov cr0, eax
 
     jmp 0x08:pm_entry
+
+.disk_err:
+    mov ah, 0x0E
+    mov al, 'E'
+    int 0x10
+    cli
+    hlt
 
 BITS 32
 pm_entry:
@@ -47,28 +49,11 @@ pm_entry:
     mov ss, ax
     mov esp, 0x90000
 
-    ; Clear screen — stosw writes 2 bytes, exactly 80*25*2 = 4000 bytes total
-    mov edi, 0xB8000
-    mov ecx, 80*25
-    mov ax, 0x0720
-    rep stosw
+    mov eax, 0x10000
+    call eax
 
-    ; Print banner at absolute top-left
-    mov esi, banner
-    mov edi, 0xB8000
-    mov bl, 0x0B
-.print:
-    lodsb
-    test al, al
-    jz .done
-    mov [edi], al
-    mov [edi+1], bl
-    add edi, 2
-    jmp .print
-.done:
-    jmp 0x10000
-
-banner db '[ SuchOS v0.1 ] Protected mode active.', 0
+    cli
+    hlt
 
 gdt_start:
     dq 0
