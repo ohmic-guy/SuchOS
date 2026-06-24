@@ -6,9 +6,10 @@ QEMU   = qemu-system-i386
 CFLAGS = -m32 -ffreestanding -fno-pic -nostdlib -fno-builtin \
          -fno-stack-protector -Wall -Wextra -Ikernel
 
-KERNEL_CSRC = kernel/kernel.c kernel/vga.c kernel/idt.c \
-              kernel/isr.c kernel/pic.c kernel/keyboard.c
-KERNEL_OBJS = $(KERNEL_CSRC:.c=.o) kernel/isr.o
+KERNEL_CSRC  = kernel/kernel.c kernel/vga.c kernel/idt.c \
+               kernel/isr.c kernel/pic.c kernel/keyboard.c
+KERNEL_COBJS = $(KERNEL_CSRC:.c=.o)
+KERNEL_OBJS  = $(KERNEL_COBJS) kernel/interrupts.o
 
 all: floppy.img
 
@@ -18,7 +19,7 @@ boot.bin: boot/boot.asm
 stage2.bin: boot/stage2.asm
 	$(ASM) -f bin $< -o $@
 
-kernel/isr.o: kernel/isr.asm
+kernel/interrupts.o: kernel/isr.asm
 	$(ASM) -f elf32 $< -o $@
 
 %.o: %.c
