@@ -1,24 +1,30 @@
 Project: SuchOS
-Day 2 complete.
+Day 3 complete.
 
 State:
-- Two-stage bootloader working
-- Stage 1: 512B MBR, loads Stage 2 via BIOS int 0x13
-- Stage 2: Loads kernel from disk (sector 3 onwards), enables A20, loads GDT, enters 32-bit protected mode, prints VGA banner, jumps to C kernel at 0x10000
-- Kernel: C entry point running in protected mode, placed at 0x10000, writes directly to VGA memory
-- Build: nasm + gcc (32-bit freestanding) + ld + make + qemu-system-i386 on Linux
-- Image: floppy.img, raw format, 1.44MB
+- VGA driver: scrolling, color, putchar, writehex, writedec, backspace
+- IDT: 256 gates, all 32 CPU exceptions + 16 IRQs handled via NASM stubs
+- PIC: remapped IRQ 0-7 → INT 32-39, IRQ 8-15 → INT 40-47
+- Keyboard: IRQ1 handler, scancode→ASCII, live input at prompt
+- Kernel boots to "> " prompt, accepts keystrokes
+- ASM stubs in kernel/isr.asm → compiled as kernel/interrupts.o (not isr.o)
+- Build: nasm + gcc -m32 + ld + objcopy + make + qemu
 
 Files:
-- boot/boot.asm    — Stage 1 MBR
-- boot/stage2.asm  — Stage 2 + protected mode + VGA + jump to kernel
-- kernel/kernel.c  — C kernel entry point
-- kernel/linker.ld — Flat binary linker script
-- Makefile         — build + run
+- boot/boot.asm       — Stage 1 MBR
+- boot/stage2.asm     — Stage 2, loads 32 sectors, protected mode, jumps to 0x10000
+- kernel/kernel.c     — entry point, init sequence
+- kernel/vga.h/c      — full text driver
+- kernel/idt.h/c      — IDT setup
+- kernel/isr.h/c      — exception + IRQ dispatch
+- kernel/isr.asm      — NASM interrupt stubs → interrupts.o
+- kernel/pic.h/c      — PIC remap + EOI
+- kernel/keyboard.h/c — IRQ1 scancode handler
+- kernel/linker.ld    — flat binary at 0x10000
+- Makefile
 
-Next session (Day 3):
-- Create a text mode VGA driver (cursor control, scrolling, string/hex printing)
-- Setup the Interrupt Descriptor Table (IDT)
-- Implement Interrupt Service Routines (ISRs) and IRQ handlers
-- Setup the Programmable Interrupt Controller (PIC)
-- Handle basic keyboard input (IRQ 1)
+Next session (Day 4):
+- GDT in C (move out of stage2.asm)
+- Physical memory manager (bitmap allocator)
+- Assume flat 32MB RAM
+- kmalloc / kfree basics
