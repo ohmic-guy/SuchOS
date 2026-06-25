@@ -10,10 +10,12 @@ SECTIONS {
 
     .rodata : { *(.rodata*) }
 
-    .data : { *(.data) }
+    .data   : { *(.data)   }
 
     .bss : {
         *(.bss)
         *(COMMON)
     }
+
+    kernel_end = .;
 }
