@@ -1,24 +1,28 @@
 Project: SuchOS
-Day 3 complete.
+Day 4 complete.
 
 State:
-- Two-stage bootloader working
-- Stage 1: 512B MBR, loads Stage 2 via BIOS int 0x13
-- Stage 2: Loads kernel from disk (sector 3 onwards), enables A20, loads GDT, enters 32-bit protected mode, prints VGA banner, jumps to C kernel at 0x10000
-- Kernel: C entry point running in protected mode, placed at 0x10000, writes directly to VGA memory
-- Build: nasm + gcc (32-bit freestanding) + ld + make + qemu-system-i386 on Linux
-- Image: floppy.img, raw format, 1.44MB
+- GDT: moved to C (gdt.c + gdt_flush.asm), 5 gates — null, kernel code/data, user code/data
+- PMM: bitmap allocator, 32MB flat memory, marks kernel frames used at init
+- Heap: bump allocator, 4MB heap above kernel_end, 4-byte aligned kmalloc
+- kfree: stub — proper free list Day 5
+- kernel_end exposed via linker symbol, heap base page-aligned above it
+- kmalloc test runs at boot, prints ptr address
+- Build: nasm + gcc -m32 + ld + objcopy + make + qemu
 
-Files:
-- boot/boot.asm    — Stage 1 MBR
-- boot/stage2.asm  — Stage 2 + protected mode + VGA + jump to kernel
-- kernel/kernel.c  — C kernel entry point
-- kernel/linker.ld — Flat binary linker script
-- Makefile         — build + run
+Files added:
+- kernel/gdt.h/c
+- kernel/gdt_flush.asm
+- kernel/pmm.h/c
+- kernel/heap.h/c
 
-Next session (Day 3):
-- Create a text mode VGA driver (cursor control, scrolling, string/hex printing)
-- Setup the Interrupt Descriptor Table (IDT)
-- Implement Interrupt Service Routines (ISRs) and IRQ handlers
-- Setup the Programmable Interrupt Controller (PIC)
-- Handle basic keyboard input (IRQ 1)
+Files updated:
+- kernel/kernel.c
+- kernel/linker.ld
+- Makefile
+
+Next session (Day 5):
+- Paging: enable CR0 paging bit, identity map first 4MB
+- Page directory + page tables
+- kfree proper free list (optional, can defer)
+- Terminal command buffer — parse what user types, execute basic commands
