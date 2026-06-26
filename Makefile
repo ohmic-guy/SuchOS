@@ -8,7 +8,7 @@ CFLAGS = -m32 -ffreestanding -fno-pic -nostdlib -fno-builtin \
 
 KERNEL_CSRC  = kernel/kernel.c kernel/vga.c kernel/gdt.c kernel/idt.c \
                kernel/isr.c kernel/pic.c kernel/keyboard.c \
-               kernel/pmm.c kernel/heap.c
+               kernel/pmm.c kernel/heap.c kernel/paging.c kernel/shell.c
 KERNEL_COBJS = $(KERNEL_CSRC:.c=.o)
 KERNEL_OBJS  = $(KERNEL_COBJS) kernel/interrupts.o kernel/gdt_flush.o
 
