@@ -3,14 +3,17 @@ CC     = gcc
 LD     = ld
 QEMU   = qemu-system-i386
 
-CFLAGS = -m32 -ffreestanding -fno-pic -nostdlib -fno-builtin \
-         -fno-stack-protector -Wall -Wextra -Ikernel
+CFLAGS_BASE = -m32 -ffreestanding -fno-pic -nostdlib -fno-builtin \
+              -Wall -Wextra -Ikernel
+CFLAGS      = $(CFLAGS_BASE) -fno-stack-protector
+SP_CFLAGS   = $(CFLAGS_BASE) -fstack-protector-strong
 
 KERNEL_CSRC  = kernel/kernel.c kernel/vga.c kernel/gdt.c kernel/idt.c \
                kernel/isr.c kernel/pic.c kernel/keyboard.c \
                kernel/pmm.c kernel/heap.c kernel/paging.c kernel/shell.c
 KERNEL_COBJS = $(KERNEL_CSRC:.c=.o)
-KERNEL_OBJS  = $(KERNEL_COBJS) kernel/interrupts.o kernel/gdt_flush.o
+KERNEL_OBJS  = $(KERNEL_COBJS) kernel/stack_guard.o \
+               kernel/interrupts.o kernel/gdt_flush.o
 
 all: floppy.img
 
@@ -26,8 +29,13 @@ kernel/interrupts.o: kernel/isr.asm
 kernel/gdt_flush.o: kernel/gdt_flush.asm
 	$(ASM) -f elf32 $< -o $@
 
-%.o: %.c
+# stack_guard MUST NOT have stack protector — circular dependency
+kernel/stack_guard.o: kernel/stack_guard.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+# All other kernel C files get stack protection
+%.o: %.c
+	$(CC) $(SP_CFLAGS) -c $< -o $@
 
 kernel.elf: $(KERNEL_OBJS) kernel/linker.ld
 	$(LD) -T kernel/linker.ld -m elf_i386 -o $@ $(KERNEL_OBJS)
