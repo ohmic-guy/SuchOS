@@ -16,7 +16,7 @@ KERNEL_CSRC  = kernel/kernel.c kernel/vga.c kernel/gdt.c \
 KERNEL_COBJS = $(KERNEL_CSRC:.c=.o)
 KERNEL_OBJS  = $(KERNEL_COBJS) kernel/stack_guard.o \
                kernel/interrupts.o kernel/gdt_flush.o \
-               kernel/tss_flush.o kernel/usermode.o
+               kernel/tss_flush.o kernel/usermode_asm.o
 
 all: floppy.img
 
@@ -35,7 +35,7 @@ kernel/gdt_flush.o: kernel/gdt_flush.asm
 kernel/tss_flush.o: kernel/tss_flush.asm
 	$(ASM) -f elf32 $< -o $@
 
-kernel/usermode.o: kernel/usermode.asm
+kernel/usermode_asm.o: kernel/usermode.asm
 	$(ASM) -f elf32 $< -o $@
 
 kernel/stack_guard.o: kernel/stack_guard.c
