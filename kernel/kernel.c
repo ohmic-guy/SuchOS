@@ -6,6 +6,7 @@
 #include "pic.h"
 #include "pmm.h"
 #include "shell.h"
+#include "syscall.h"
 #include "tss.h"
 #include "vga.h"
 
@@ -23,7 +24,7 @@ void kernel_main(void) {
   terminal_init();
 
   terminal_setcolor(VGA_LIGHT_CYAN, VGA_BLACK);
-  terminal_write("[ SuchOS v0.7 ]\n\n");
+  terminal_write("[ SuchOS v0.8 ]\n\n");
 
   LBL();
   terminal_write("GDT              ");
@@ -65,12 +66,16 @@ void kernel_main(void) {
   paging_init();
   OK();
   LBL();
+  terminal_write("Syscall int 0x80 ");
+  syscall_init();
+  OK();
+  LBL();
   terminal_write("Stack canaries   ");
   terminal_setcolor(VGA_LIGHT_GREEN, VGA_BLACK);
   terminal_write("[OK] guard=0xDEADC0DE\n");
 
   terminal_setcolor(VGA_LIGHT_CYAN, VGA_BLACK);
-  terminal_write("\nType 'help'. Type 'ring3' to test privilege separation.\n");
+  terminal_write("\nType 'help'. Type 'ring3' to run user program.\n");
 
   __asm__ volatile("sti");
   shell_init();

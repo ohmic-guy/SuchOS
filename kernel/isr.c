@@ -1,5 +1,6 @@
 #include "isr.h"
 #include "pic.h"
+#include "syscall.h"
 #include "vga.h"
 
 static isr_t irq_handlers[16] = {0};
@@ -42,11 +43,17 @@ static const char *exceptions[] = {"Division By Zero",
                                    "Reserved"};
 
 void isr_handler(registers_t *regs) {
-  uint8_t ring = regs->cs & 3;
+  /* syscall — do NOT halt, return to user */
+  if (regs->int_no == 128) {
+    syscall_handler(regs);
+    return;
+  }
 
+  uint8_t ring = regs->cs & 3;
   terminal_setcolor(VGA_LIGHT_RED, VGA_BLACK);
   terminal_write("\n[EXCEPTION] ");
-  terminal_write(exceptions[regs->int_no]);
+  if (regs->int_no < 32)
+    terminal_write(exceptions[regs->int_no]);
   terminal_write(" | INT=");
   terminal_writedec(regs->int_no);
   terminal_write(" ERR=");
@@ -55,16 +62,13 @@ void isr_handler(registers_t *regs) {
   terminal_writedec(ring);
   terminal_putchar('\n');
 
-  /* GPF from ring 3 — expected from ring3 test */
   if (regs->int_no == 13 && ring == 3) {
     terminal_setcolor(VGA_LIGHT_GREEN, VGA_BLACK);
-    terminal_write("\n[OK] Privilege separation confirmed.\n");
-    terminal_write("[OK] Ring 3 GPF caught by ring 0 kernel.\n");
-    terminal_write("[OK] CS=0x1B -> user code, halting now.\n");
+    terminal_write("[OK] Privilege separation confirmed.\n");
   }
 
   terminal_setcolor(VGA_LIGHT_RED, VGA_BLACK);
-  terminal_write("\nSYSTEM HALTED — restart QEMU\n");
+  terminal_write("SYSTEM HALTED\n");
   __asm__ volatile("cli; hlt");
 }
 

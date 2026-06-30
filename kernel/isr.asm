@@ -73,6 +73,13 @@ IRQ 13, 45
 IRQ 14, 46
 IRQ 15, 47
 
+; Syscall gate — int 0x80
+[global isr128]
+isr128:
+    push dword 0
+    push dword 128
+    jmp isr_common
+
 [extern isr_handler]
 [extern irq_handler]
 

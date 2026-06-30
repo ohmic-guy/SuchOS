@@ -12,7 +12,7 @@ KERNEL_CSRC  = kernel/kernel.c kernel/vga.c kernel/gdt.c \
                kernel/tss.c kernel/idt.c kernel/isr.c \
                kernel/pic.c kernel/keyboard.c \
                kernel/pmm.c kernel/heap.c kernel/paging.c \
-               kernel/shell.c kernel/usermode.c
+               kernel/syscall.c kernel/shell.c kernel/usermode.c
 KERNEL_COBJS = $(KERNEL_CSRC:.c=.o)
 KERNEL_OBJS  = $(KERNEL_COBJS) kernel/stack_guard.o \
                kernel/interrupts.o kernel/gdt_flush.o \
