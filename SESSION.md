@@ -1,27 +1,32 @@
 Project: SuchOS
-Day 5 complete.
+Day 7 complete.
 
 State:
-- Paging: identity mapped first 4MB, CR3 loaded, CR0 bit 31 set
-- Page dir + page table: 4KB aligned static arrays, 1024 entries each
-- Heap: proper free list, kfree works, reuse verified at boot
-- Shell: command buffer, parses input, executes help/clear/mem/version
-- Keyboard now routes to shell_handle_char() instead of VGA directly
-- kmalloc+kfree+reuse all verified at boot
-- Build: nasm + gcc -m32 + ld + objcopy + make + qemu
+- TSS: loaded at GDT[5], kernel stack at esp0
+- GDT: expanded to 6 descriptors including TSS slot
+- Ring 3: user pages at 0x040000-0x07FFFF with PAGE_USER
+- PD entry 0 has PAGE_USER — entire pt0 walk user-accessible
+- usermode_enter: NASM iret frame, CS=0x1B SS=0x23
+- GPF from ring 3 caught by ring 0 IDT handler
+- Privilege separation confirmed working
+- shell: ring3 command triggers usermode test
 
 Files added:
-- kernel/paging.h/c
-- kernel/shell.h/c
+- kernel/tss.h/c
+- kernel/tss_flush.asm
+- kernel/usermode.h/c
+- kernel/usermode.asm → kernel/usermode_asm.o
 
 Files updated:
-- kernel/heap.c     — proper free list
-- kernel/keyboard.c — routes to shell
+- kernel/gdt.h/c — 6 entries, gdt_set_gate public
+- kernel/paging.c — PAGE_USER on pd[0] + user PTEs
+- kernel/isr.c — ring level printed in exceptions
+- kernel/shell.c — ring3 command
 - kernel/kernel.c
 - Makefile
 
-Next session (Day 6 — Security Hardening):
-- NX/XD bit via PAE paging
-- Stack canaries: __stack_chk_fail + gcc -fstack-protector
-- Separate kernel/user page flags (read-only, no-exec)
-- Harden interrupt handlers against stack overflows
+Next session (Day 8):
+- Syscall interface via int 0x80
+- register eax = syscall number
+- sys_write, sys_read, sys_exit
+- User program calls kernel via syscall instead of crashing
