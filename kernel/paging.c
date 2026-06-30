@@ -61,7 +61,7 @@ void paging_init(void) {
     pt1[i] = phys | PAGE_PRESENT | PAGE_RW | PAGE_NX;
   }
 
-  pd[0] = (uint64_t)(uint32_t)pt0 | PAGE_PRESENT | PAGE_RW;
+  pd[0] = (uint64_t)(uint32_t)pt0 | PAGE_PRESENT | PAGE_RW | PAGE_USER;
   pd[1] = (uint64_t)(uint32_t)pt1 | PAGE_PRESENT | PAGE_RW;
   for (uint32_t i = 2; i < 512; i++)
     pd[i] = 0;
