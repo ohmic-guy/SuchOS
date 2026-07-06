@@ -1,3 +1,4 @@
+#include "elf.h"
 #include "gdt.h"
 #include "heap.h"
 #include "idt.h"
@@ -24,7 +25,7 @@ void kernel_main(void) {
   terminal_init();
 
   terminal_setcolor(VGA_LIGHT_CYAN, VGA_BLACK);
-  terminal_write("[ SuchOS v0.8 ]\n\n");
+  terminal_write("[ SuchOS v0.9 ]\n\n");
 
   LBL();
   terminal_write("GDT              ");
@@ -70,12 +71,15 @@ void kernel_main(void) {
   syscall_init();
   OK();
   LBL();
+  terminal_write("ELF loader       ");
+  OK();
+  LBL();
   terminal_write("Stack canaries   ");
   terminal_setcolor(VGA_LIGHT_GREEN, VGA_BLACK);
   terminal_write("[OK] guard=0xDEADC0DE\n");
 
   terminal_setcolor(VGA_LIGHT_CYAN, VGA_BLACK);
-  terminal_write("\nType 'help'. Type 'ring3' to run user program.\n");
+  terminal_write("\nType 'help'. Type 'elf' to run user program.\n");
 
   __asm__ volatile("sti");
   shell_init();

@@ -33,7 +33,8 @@ static void cmd_help(void) {
   terminal_write("  mem       memory stats\n");
   terminal_write("  security  security status\n");
   terminal_write("  version   version info\n");
-  terminal_write("  ring3     run user program via syscalls\n");
+  terminal_write("  ring3     raw bytes syscall test\n");
+  terminal_write("  elf       load + run ELF user program\n");
 }
 
 static void cmd_clear(void) { terminal_init(); }
@@ -54,11 +55,7 @@ static void cmd_security(void) {
   terminal_setcolor(VGA_YELLOW, VGA_BLACK);
   terminal_write("\nSecurity:\n");
   terminal_setcolor(VGA_LIGHT_GREY, VGA_BLACK);
-  terminal_write("  PAE paging    ");
-  terminal_setcolor(VGA_LIGHT_GREEN, VGA_BLACK);
-  terminal_write("enabled\n");
-  terminal_setcolor(VGA_LIGHT_GREY, VGA_BLACK);
-  terminal_write("  NX bit        ");
+  terminal_write("  PAE + NX      ");
   terminal_setcolor(VGA_LIGHT_GREEN, VGA_BLACK);
   terminal_write("enabled\n");
   terminal_setcolor(VGA_LIGHT_GREY, VGA_BLACK);
@@ -74,19 +71,20 @@ static void cmd_security(void) {
   terminal_setcolor(VGA_LIGHT_GREEN, VGA_BLACK);
   terminal_write("GDT[5]\n");
   terminal_setcolor(VGA_LIGHT_GREY, VGA_BLACK);
-  terminal_write("  Syscall gate  ");
+  terminal_write("  int 0x80      ");
   terminal_setcolor(VGA_LIGHT_GREEN, VGA_BLACK);
-  terminal_write("int 0x80 DPL=3\n");
+  terminal_write("DPL=3\n");
 }
 
 static void cmd_version(void) {
   terminal_setcolor(VGA_LIGHT_CYAN, VGA_BLACK);
-  terminal_write("\nSuchOS v0.8\n");
+  terminal_write("\nSuchOS v0.9\n");
   terminal_setcolor(VGA_LIGHT_GREY, VGA_BLACK);
   terminal_write("  Arch    : x86 32-bit\n");
-  terminal_write("  Rings   : 0 (kernel) + 3 (user)\n");
+  terminal_write("  Rings   : 0 + 3\n");
   terminal_write("  Paging  : PAE + NX\n");
-  terminal_write("  Syscall : int 0x80 (write, exit)\n");
+  terminal_write("  Syscall : int 0x80\n");
+  terminal_write("  ELF     : ELF32 loader\n");
 }
 
 static void shell_execute(const char *cmd) {
@@ -102,6 +100,8 @@ static void shell_execute(const char *cmd) {
     cmd_version();
   else if (streq(cmd, "ring3"))
     usermode_test();
+  else if (streq(cmd, "elf"))
+    usermode_run_elf();
   else {
     terminal_setcolor(VGA_LIGHT_RED, VGA_BLACK);
     terminal_write("Unknown: ");
