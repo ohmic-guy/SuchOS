@@ -24,7 +24,7 @@ KERNEL_OBJS  = $(KERNEL_COBJS) kernel/stack_guard.o \
 
 all: floppy.img
 
-# ── Bootloader ───────────────────────────────────────────
+# ── Bootloader ────────────────────────────────────────────
 boot.bin: boot/boot.asm
 	$(ASM) -f bin $< -o $@
 
@@ -52,7 +52,7 @@ kernel/stack_guard.o: kernel/stack_guard.c
 %.o: %.c
 	$(CC) $(SP_CFLAGS) -c $< -o $@
 
-# ── User program ─────────────────────────────────────────
+# ── User program ──────────────────────────────────────────
 user/start.o: user/start.asm
 	$(ASM) -f elf32 $< -o $@
 
@@ -61,7 +61,8 @@ user/hello.o: user/hello.c user/syscall.h
 	    -fno-stack-protector -Wall -c $< -o $@
 
 user/hello.elf: user/start.o user/hello.o user/user.ld
-	$(CROSS_LD) -T user/user.ld -o $@ user/start.o user/hello.o
+	$(CROSS_LD) -T user/user.ld -e _start \
+	    -o $@ user/start.o user/hello.o
 
 # Embed ELF binary into kernel as raw bytes
 kernel/hello_elf.o: user/hello.elf
@@ -74,7 +75,7 @@ kernel.elf: $(KERNEL_OBJS) kernel/linker.ld
 kernel.bin: kernel.elf
 	objcopy -O binary $< $@
 
-# ── Floppy image ─────────────────────────────────────────
+# ── Floppy image ──────────────────────────────────────────
 floppy.img: boot.bin stage2.bin kernel.bin
 	dd if=/dev/zero  bs=512 count=2880 of=$@
 	dd if=boot.bin   of=$@ conv=notrunc

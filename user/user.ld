@@ -3,10 +3,15 @@ ENTRY(_start)
 SECTIONS {
     . = 0x040000;
 
-    .text   : { *(.text)    }
+    .text : {
+        user/start.o(.text)
+        *(.text*)
+    }
+
     .rodata : { *(.rodata*) }
-    .data   : { *(.data)    }
-    .bss    : {
+    .data   : { *(.data)   }
+
+    .bss : {
         *(.bss)
         *(COMMON)
     }
