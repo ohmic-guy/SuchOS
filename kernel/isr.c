@@ -43,13 +43,14 @@ static const char *exceptions[] = {"Division By Zero",
                                    "Reserved"};
 
 void isr_handler(registers_t *regs) {
-  /* syscall — do NOT halt, return to user */
+  /* syscall — return to user without halting */
   if (regs->int_no == 128) {
     syscall_handler(regs);
     return;
   }
 
   uint8_t ring = regs->cs & 3;
+
   terminal_setcolor(VGA_LIGHT_RED, VGA_BLACK);
   terminal_write("\n[EXCEPTION] ");
   if (regs->int_no < 32)
@@ -60,6 +61,14 @@ void isr_handler(registers_t *regs) {
   terminal_writehex(regs->err_code);
   terminal_write(" | Ring=");
   terminal_writedec(ring);
+
+  if (regs->int_no == 14) {
+    uint32_t cr2;
+    __asm__ volatile("mov %%cr2, %0" : "=r"(cr2));
+    terminal_write(" | CR2=");
+    terminal_writehex(cr2);
+  }
+
   terminal_putchar('\n');
 
   if (regs->int_no == 13 && ring == 3) {

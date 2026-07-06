@@ -68,7 +68,7 @@ void paging_init(void) {
     pt0[i] = ((uint64_t)i << 12) | PAGE_PRESENT | PAGE_RW | PAGE_USER;
 
   /* User stack region: 0x060000-0x07FFFF — NX, writable, user */
-  for (uint32_t i = 0x60; i < 0x80; i++) {
+  for (uint32_t i = 0x60; i < 0x90; i++) {
     uint64_t flags = PAGE_PRESENT | PAGE_RW | PAGE_USER;
     if (nx)
       flags |= PAGE_NX;
