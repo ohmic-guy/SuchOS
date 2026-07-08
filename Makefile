@@ -58,7 +58,8 @@ user/start.o: user/start.asm
 
 user/hello.o: user/hello.c user/syscall.h
 	$(CROSS_CC) -m32 -ffreestanding -nostdlib -fno-builtin \
-	    -fno-stack-protector -Wall -c $< -o $@
+	    -fno-stack-protector -fno-pic -fno-pie \
+	    -Wall -c $< -o $@
 
 user/hello.elf: user/start.o user/hello.o user/user.ld
 	$(CROSS_LD) -T user/user.ld -e _start \
