@@ -73,7 +73,6 @@ IRQ 13, 45
 IRQ 14, 46
 IRQ 15, 47
 
-; Syscall gate — int 0x80
 [global isr128]
 isr128:
     push dword 0
@@ -82,7 +81,27 @@ isr128:
 
 [extern isr_handler]
 [extern irq_handler]
+[extern sched_esp_ptr]
 
+; ── Shared exit path ─────────────────────────────────────────
+; Called by both isr_common and irq_common after handler returns.
+; Checks sched_esp_ptr — if set, switches to new process stack.
+common_exit:
+    mov eax, [sched_esp_ptr]
+    test eax, eax
+    jz .no_switch
+    mov esp, [eax]              ; load new process's saved GS pointer
+    mov dword [sched_esp_ptr], 0
+.no_switch:
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popa
+    add esp, 8                  ; discard int_no + err_code
+    iret
+
+; ── Exception / syscall path ─────────────────────────────────
 isr_common:
     pusha
     push ds
@@ -94,17 +113,12 @@ isr_common:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    push esp
+    push esp                    ; registers_t* = &saved_gs
     call isr_handler
-    pop eax
-    pop gs
-    pop fs
-    pop es
-    pop ds
-    popa
-    add esp, 8
-    iret
+    add esp, 4                  ; discard registers_t* arg
+    jmp common_exit
 
+; ── Hardware IRQ path ─────────────────────────────────────────
 irq_common:
     pusha
     push ds
@@ -118,7 +132,17 @@ irq_common:
     mov gs, ax
     push esp
     call irq_handler
-    pop eax
+    add esp, 4
+    jmp common_exit
+
+; ── Scheduler entry point ─────────────────────────────────────
+; Called from C (sched_prepare_first sets sched_esp_ptr first).
+; Does NOT return — irets into first scheduled process.
+[global sched_enter_first]
+sched_enter_first:
+    mov eax, [sched_esp_ptr]
+    mov esp, [eax]
+    mov dword [sched_esp_ptr], 0
     pop gs
     pop fs
     pop es

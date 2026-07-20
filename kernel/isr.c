@@ -1,5 +1,6 @@
 #include "isr.h"
 #include "pic.h"
+#include "sched.h"
 #include "syscall.h"
 #include "vga.h"
 
@@ -43,14 +44,12 @@ static const char *exceptions[] = {"Division By Zero",
                                    "Reserved"};
 
 void isr_handler(registers_t *regs) {
-  /* syscall — return to user without halting */
   if (regs->int_no == 128) {
     syscall_handler(regs);
     return;
   }
 
   uint8_t ring = regs->cs & 3;
-
   terminal_setcolor(VGA_LIGHT_RED, VGA_BLACK);
   terminal_write("\n[EXCEPTION] ");
   if (regs->int_no < 32)
@@ -68,7 +67,6 @@ void isr_handler(registers_t *regs) {
     terminal_write(" | CR2=");
     terminal_writehex(cr2);
   }
-
   terminal_putchar('\n');
 
   if (regs->int_no == 13 && ring == 3) {
@@ -83,7 +81,12 @@ void isr_handler(registers_t *regs) {
 
 void irq_handler(registers_t *regs) {
   uint8_t irq = (uint8_t)(regs->int_no - 32);
-  if (irq_handlers[irq])
+
+  if (irq == 0) {
+    sched_tick(regs); /* timer: preempt */
+  } else if (irq_handlers[irq]) {
     irq_handlers[irq](regs);
+  }
+
   pic_send_eoi(irq);
 }

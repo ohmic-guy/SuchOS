@@ -6,6 +6,7 @@
 #include "paging.h"
 #include "pic.h"
 #include "pmm.h"
+#include "sched.h"
 #include "shell.h"
 #include "syscall.h"
 #include "tss.h"
@@ -25,7 +26,7 @@ void kernel_main(void) {
   terminal_init();
 
   terminal_setcolor(VGA_LIGHT_CYAN, VGA_BLACK);
-  terminal_write("[ SuchOS v0.9 ]\n\n");
+  terminal_write("[ SuchOS v0.10 ]\n\n");
 
   LBL();
   terminal_write("GDT              ");
@@ -74,12 +75,16 @@ void kernel_main(void) {
   terminal_write("ELF loader       ");
   OK();
   LBL();
+  terminal_write("Scheduler        ");
+  sched_init();
+  OK();
+  LBL();
   terminal_write("Stack canaries   ");
   terminal_setcolor(VGA_LIGHT_GREEN, VGA_BLACK);
   terminal_write("[OK] guard=0xDEADC0DE\n");
 
   terminal_setcolor(VGA_LIGHT_CYAN, VGA_BLACK);
-  terminal_write("\nType 'help'. Type 'elf' to run user program.\n");
+  terminal_write("\nType 'help'. Type 'sched' to run scheduler.\n");
 
   __asm__ volatile("sti");
   shell_init();

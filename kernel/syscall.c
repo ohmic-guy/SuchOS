@@ -1,4 +1,5 @@
 #include "syscall.h"
+#include "sched.h"
 #include "vga.h"
 
 static void sys_write(registers_t *regs) {
@@ -9,22 +10,26 @@ static void sys_write(registers_t *regs) {
 }
 
 static void sys_exit(registers_t *regs) {
+  if (sched_active()) {
+    sched_exit(); /* switches to next or halts — never returns normally */
+    return;
+  }
+  /* Non-scheduler path (elf / ring3 commands) */
   terminal_setcolor(VGA_LIGHT_GREEN, VGA_BLACK);
   terminal_write("\n[syscall] sys_exit(");
   terminal_writedec(regs->ebx);
   terminal_write(") from ring 3\n");
   terminal_write("[OK] User process exited cleanly.\n");
   terminal_setcolor(VGA_WHITE, VGA_BLACK);
-  /* No scheduler yet — halt. Day 10 returns here properly. */
   __asm__ volatile("cli; hlt");
 }
 
 void syscall_handler(registers_t *regs) {
   switch (regs->eax) {
-  case SYS_WRITE:
+  case 1:
     sys_write(regs);
     break;
-  case SYS_EXIT:
+  case 60:
     sys_exit(regs);
     break;
   default:
@@ -36,4 +41,4 @@ void syscall_handler(registers_t *regs) {
   }
 }
 
-void syscall_init(void) { /* gate registered in idt_init */ }
+void syscall_init(void) {}

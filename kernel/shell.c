@@ -1,6 +1,7 @@
 #include "shell.h"
 #include "heap.h"
 #include "pmm.h"
+#include "sched.h"
 #include "usermode.h"
 #include "vga.h"
 
@@ -33,8 +34,10 @@ static void cmd_help(void) {
   terminal_write("  mem       memory stats\n");
   terminal_write("  security  security status\n");
   terminal_write("  version   version info\n");
-  terminal_write("  ring3     raw bytes syscall test\n");
-  terminal_write("  elf       load + run ELF user program\n");
+  terminal_write("  ring3     raw syscall test\n");
+  terminal_write("  elf       run ELF user program\n");
+  terminal_write("  sched     start round-robin scheduler\n");
+  terminal_write("  ps        list processes\n");
 }
 
 static void cmd_clear(void) { terminal_init(); }
@@ -78,13 +81,14 @@ static void cmd_security(void) {
 
 static void cmd_version(void) {
   terminal_setcolor(VGA_LIGHT_CYAN, VGA_BLACK);
-  terminal_write("\nSuchOS v0.9\n");
+  terminal_write("\nSuchOS v0.10\n");
   terminal_setcolor(VGA_LIGHT_GREY, VGA_BLACK);
   terminal_write("  Arch    : x86 32-bit\n");
   terminal_write("  Rings   : 0 + 3\n");
   terminal_write("  Paging  : PAE + NX\n");
   terminal_write("  Syscall : int 0x80\n");
   terminal_write("  ELF     : ELF32 loader\n");
+  terminal_write("  Sched   : round-robin, IRQ0 preemptive\n");
 }
 
 static void shell_execute(const char *cmd) {
@@ -102,6 +106,10 @@ static void shell_execute(const char *cmd) {
     usermode_test();
   else if (streq(cmd, "elf"))
     usermode_run_elf();
+  else if (streq(cmd, "sched"))
+    sched_run_tasks();
+  else if (streq(cmd, "ps"))
+    sched_print_status();
   else {
     terminal_setcolor(VGA_LIGHT_RED, VGA_BLACK);
     terminal_write("Unknown: ");
