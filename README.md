@@ -16,6 +16,7 @@ SuchOS is a custom 32-bit x86 (i386) operating system kernel built from scratch.
 
 ## Prerequisites
 
+### Linux
 To build and run SuchOS, you need the following dependencies installed on your Linux system:
 
 - **Make**: For building the project.
@@ -23,6 +24,17 @@ To build and run SuchOS, you need the following dependencies installed on your L
 - **GCC / GNU Binutils**: Host compiler and linker.
 - **QEMU**: Specifically `qemu-system-i386` for running the built floppy image.
 - **i686-elf Cross-Compiler**: You need a cross-compiler targeting `i686-elf` installed in your home directory (specifically `~/opt/cross/bin/i686-elf-gcc` and `~/opt/cross/bin/i686-elf-ld`). This is used to build user-space programs (`user/*.c` and `user/*.asm`) without linking against the host OS libraries.
+
+### Windows
+For Windows users, the recommended and easiest approach is to use **Windows Subsystem for Linux (WSL)** (preferably WSL 2 with an Ubuntu distribution).
+
+1. **Install WSL**: Open PowerShell as Administrator and run `wsl --install`. Restart if necessary, then set up your Ubuntu username and password.
+2. **Install Base Tools**: Open your WSL Ubuntu terminal and install the required packages:
+   ```bash
+   sudo apt update
+   sudo apt install build-essential nasm qemu-system-x86
+   ```
+3. **i686-elf Cross-Compiler**: Inside WSL, you must build and install the `i686-elf` cross-compiler to `~/opt/cross/bin` exactly like on a native Linux system. This is required for building the user-space applications.
 
 ## Project Structure
 
