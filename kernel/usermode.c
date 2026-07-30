@@ -80,7 +80,7 @@ void sched_run_tasks(void) {
 
   audit_log(AUDIT_SCHED, 0, base_a, 0);
   audit_log(AUDIT_SCHED, 1, base_b, 0);
-  audit_log(AUDIT_SECURITY, 0, (uint32_t)rdtsc_seed(), 0xA51R);
+  audit_log(AUDIT_SECURITY, 0, (uint32_t)rdtsc_seed(), 0xA51);
 
   sched_init();
   sched_create("task_a", base_a, 0x06F000);
