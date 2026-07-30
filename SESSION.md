@@ -1,34 +1,32 @@
 Project: SuchOS
-Day 9 complete.
+Day 10 complete.
 
 State:
-- ELF32 loader: parses ELF header, program headers, loads PT_LOAD segments
-- User program compiled with i686-elf-gcc 13.2.0
-- ELF binary embedded in kernel via objcopy -I binary
-- User program runs in ring 3 at 0x040000, stack at 0x078000
-- sys_write + sys_exit called from real C code via int 0x80
-- paging: CPUID check before EFER.NXE — works on default QEMU CPU
-- NX applied conditionally based on CPU support
-- stage2 loads 63 sectors (was 32) — handles larger kernel.bin
+- Scheduler: round-robin, preemptive via IRQ0 timer
+- PCB: process_t with pid, state, esp, kstack (4KB aligned)
+- Context switch: fake iret frame on kernel stack, common_exit in isr.asm
+- sched_enter_first: cli + iret into first process
+- sched_tick: saves current esp, finds next READY proc, sets TSS esp0
+- sched_exit: marks DEAD, switches to next or halts
+- Task A + B: raw x86 bytes, ESI counter, print A/B x5 via int 0x80
+- IRQ0 unmasked in PIC (0xFC)
+- sys_exit routes to sched_exit when scheduler active
+- sched_esp_ptr: shared between C and NASM for context switch
 
 Files added:
-- kernel/elf.h/c
-- user/syscall.h
-- user/start.asm
-- user/hello.c
-- user/user.ld
+- kernel/sched.h/c
 
 Files updated:
-- kernel/usermode.h/c  — usermode_run_elf added
-- kernel/paging.c      — CPUID NX check
-- kernel/shell.c       — elf command
-- kernel/kernel.c      — v0.9
-- boot/stage2.asm      — 63 sectors
-- Makefile             — cross-compiler, user build, objcopy embed
+- kernel/isr.asm     — common_exit, sched_enter_first, sched_esp_ptr
+- kernel/isr.c       — IRQ0 routes to sched_tick
+- kernel/pic.c       — IRQ0 unmasked
+- kernel/syscall.c   — sys_exit routes to sched_exit
+- kernel/usermode.h/c — sched_run_tasks, task_a/b raw bytes
+- kernel/shell.c     — sched + ps commands
+- kernel/kernel.c    — v0.10
 
-Next session (Day 10):
-- Round-robin process scheduler
-- Process control block (PCB)
-- Context switch in assembly
-- Timer IRQ0 drives scheduling
-- sys_exit returns to scheduler instead of halting
+Next session (Day 11):
+- SMEP + SMAP (CR4 bits 20 + 21)
+- Separate kernel/user address spaces
+- ASLR: randomise user load base via RDTSC seed
+- Audit log: ring buffer, logs syscalls + exceptions

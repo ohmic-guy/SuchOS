@@ -1,4 +1,5 @@
 #include "isr.h"
+#include "audit.h"
 #include "pic.h"
 #include "sched.h"
 #include "syscall.h"
@@ -50,6 +51,14 @@ void isr_handler(registers_t *regs) {
   }
 
   uint8_t ring = regs->cs & 3;
+  uint32_t pid = sched_active() ? sched_current()->pid : 0;
+  uint32_t cr2 = 0;
+
+  if (regs->int_no == 14)
+    __asm__ volatile("mov %%cr2, %0" : "=r"(cr2));
+
+  audit_log(AUDIT_EXCEPTION, pid, regs->int_no, cr2);
+
   terminal_setcolor(VGA_LIGHT_RED, VGA_BLACK);
   terminal_write("\n[EXCEPTION] ");
   if (regs->int_no < 32)
@@ -62,8 +71,6 @@ void isr_handler(registers_t *regs) {
   terminal_writedec(ring);
 
   if (regs->int_no == 14) {
-    uint32_t cr2;
-    __asm__ volatile("mov %%cr2, %0" : "=r"(cr2));
     terminal_write(" | CR2=");
     terminal_writehex(cr2);
   }
@@ -81,12 +88,10 @@ void isr_handler(registers_t *regs) {
 
 void irq_handler(registers_t *regs) {
   uint8_t irq = (uint8_t)(regs->int_no - 32);
-
   if (irq == 0) {
-    sched_tick(regs); /* timer: preempt */
+    sched_tick(regs);
   } else if (irq_handlers[irq]) {
     irq_handlers[irq](regs);
   }
-
   pic_send_eoi(irq);
 }
