@@ -15,6 +15,7 @@ KERNEL_CSRC  = kernel/kernel.c kernel/vga.c kernel/gdt.c \
                kernel/pic.c kernel/keyboard.c \
                kernel/pmm.c kernel/heap.c kernel/paging.c \
                kernel/syscall.c kernel/elf.c kernel/sched.c \
+               kernel/smep.c kernel/audit.c \
                kernel/shell.c kernel/usermode.c
 KERNEL_COBJS = $(KERNEL_CSRC:.c=.o)
 KERNEL_OBJS  = $(KERNEL_COBJS) kernel/stack_guard.o \
