@@ -13,6 +13,7 @@
 #include "syscall.h"
 #include "tss.h"
 #include "vga.h"
+#include "usermode.h"
 
 extern uint32_t kernel_end;
 

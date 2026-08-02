@@ -76,7 +76,7 @@ floppy.img: boot.bin stage2.bin kernel.bin
 	dd if=kernel.bin of=$@ bs=512 seek=2 conv=notrunc
 
 run: floppy.img
-	$(QEMU) -drive format=raw,file=floppy.img,if=floppy,index=0
+	$(QEMU) -nographic -drive format=raw,file=floppy.img,if=floppy,index=0
 
 clean:
 	rm -f *.bin *.elf floppy.img kernel/*.o user/*.o user/*.elf

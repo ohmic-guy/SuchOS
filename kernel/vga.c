@@ -1,3 +1,4 @@
+#include "port.h"
 #include "vga.h"
 
 #define VGA_WIDTH  80
@@ -37,7 +38,7 @@ static void scroll(void) {
     row = VGA_HEIGHT - 1;
 }
 
-void terminal_putchar(char c) {
+void terminal_putchar(char c) { outb(0x3F8, c);
     if (c == '\n') {
         col = 0;
         if (++row == VGA_HEIGHT) scroll();
