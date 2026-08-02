@@ -136,7 +136,9 @@ void sched_exit(void) {
   terminal_write("\n[sched] All processes done.\n");
   terminal_setcolor(VGA_WHITE, VGA_BLACK);
   terminal_write("[sched] Halting. Restart QEMU.\n");
-  __asm__ volatile("cli; hlt");
+  __asm__ volatile("cli");
+  for (;;)
+    __asm__ volatile("hlt");
 }
 
 void sched_prepare_first(void) {
